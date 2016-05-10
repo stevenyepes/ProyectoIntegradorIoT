@@ -1,17 +1,16 @@
 var five = require("johnny-five");
-var awsConeccion = require("./pi.js")
 var board = new five.Board();
+var awsConnetion = require("./pi.js");
 var ultraBaseline = 20;
 var ultraThreshold = 3;
 var led;
-var mensaje = "Todo right";
 
 
 board.on("ready", function() {
   var proximity = new five.Proximity({
     controller: "HCSR04",
     pin: 7,
-    freq: 60000
+    freq: 15000
   });
 
    // Initialize the RGB LED
@@ -44,11 +43,12 @@ function ultraChange(){
 
 	if(Math.abs(cm - ultraBaseline) > ultraThreshold){
 
-            mensaje = "Alerta, la distancia cambio"
+
            console.log("Alerta, la distancia cambió");
            // Turn it on and set the initial color
            led.on();
            led.color("#00FF00");
+           awsConnetion.enviar("OH, ha cambiado :O");
 
 
 	}else {

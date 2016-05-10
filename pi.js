@@ -1,7 +1,6 @@
 var awsIot = require('aws-iot-device-sdk');
 
 var myThingName = 'Prueba1';
-var miMensaje = require("./app.js");
 
 var thingShadows = awsIot.thingShadow({
    keyPath: '../certs/private.pem.key',
@@ -20,34 +19,31 @@ mythingstate = {
   }
 }
 
-setTimeout(function() {
-    console.log('Espera....');
-    mythingstate["state"]["reported"]["mensaje"] = miMensaje.mensaje;
-}, 65000);
+var enviar = function(mensaje){
 
-var networkInterfaces = require( 'os' ).networkInterfaces( );
+    var networkInterfaces = require( 'os' ).networkInterfaces( );
 
-mythingstate["state"]["reported"]["ip"] = networkInterfaces['wlan0'][0]['address'];
+    mythingstate["state"]["reported"]["ip"] = networkInterfaces['wlan0'][0]['address'];
+    mythingstate["state"]["reported"]["mensaje"] = mensaje;
+    thingShadows.on('connect', function() {
+      console.log("Connected...");
+      console.log("Registering...");
+      thingShadows.register( myThingName );
 
-thingShadows.on('connect', function() {
-  console.log("Connected...");
-  console.log("Registering...");
-  thingShadows.register( myThingName );
-
-  // An update right away causes a timeout error, so we wait about 2 seconds
-  setTimeout( function() {
-    console.log("Updating my IP address...");
-    clientTokenIP = thingShadows.update(myThingName, mythingstate);
-    console.log("Update:" + clientTokenIP);
-  }, 2500 );
+      // An update right away causes a timeout error, so we wait about 2 seconds
+      setTimeout( function() {
+        console.log("Updating my IP address...");
+        clientTokenIP = thingShadows.update(myThingName, mythingstate);
+        console.log("Update:" + clientTokenIP);
+      }, 2500 );
 
 
-  // Code below just logs messages for info/debugging
-  thingShadows.on('status',
-    function(thingName, stat, clientToken, stateObject) {
-       console.log('received '+stat+' on '+thingName+': '+
-                   JSON.stringify(stateObject));
-    });
+      // Code below just logs messages for info/debugging
+      thingShadows.on('status',
+        function(thingName, stat, clientToken, stateObject) {
+           console.log('received '+stat+' on '+thingName+': '+
+                       JSON.stringify(stateObject));
+        });
 
   thingShadows.on('update',
       function(thingName, stateObject) {
@@ -84,3 +80,5 @@ thingShadows.on('connect', function() {
     });
 
 });
+}
+module.exports.enviar = enviar;
