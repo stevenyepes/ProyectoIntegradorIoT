@@ -1,6 +1,12 @@
-var awsIot = require('aws-iot-device-sdk');
 
+var awsIot = require('aws-iot-device-sdk');
 var myThingName = 'Prueba1';
+
+
+var networkInterfaces = require( 'os' ).networkInterfaces( );
+
+
+var enviar = function(mythingstate){
 
 var thingShadows = awsIot.thingShadow({
    keyPath: '../certs/private.pem.key',
@@ -10,21 +16,11 @@ var thingShadows = awsIot.thingShadow({
     region: 'us-west-2'
 });
 
-mythingstate = {
-  "state": {
-    "reported": {
-      "ip": "unknown",
-      "mensaje":"Estoy bien!"
-    }
-  }
-}
 
-var enviar = function(mensaje){
-
-    var networkInterfaces = require( 'os' ).networkInterfaces( );
+    
 
     mythingstate["state"]["reported"]["ip"] = networkInterfaces['wlan0'][0]['address'];
-    mythingstate["state"]["reported"]["mensaje"] = mensaje;
+    
     thingShadows.on('connect', function() {
       console.log("Connected...");
       console.log("Registering...");
@@ -65,6 +61,7 @@ var enviar = function(mensaje){
   thingShadows
     .on('close', function() {
       console.log('close');
+	thingShadows.end();
     });
   thingShadows
     .on('reconnect', function() {
@@ -77,6 +74,10 @@ var enviar = function(mensaje){
   thingShadows
     .on('error', function(error) {
       console.log('error', error);
+    });
+thingShadows
+    .on('end', function() {
+      console.log('ending...');
     });
 
 });

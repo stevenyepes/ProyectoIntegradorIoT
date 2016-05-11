@@ -6,6 +6,16 @@ var ultraThreshold = 3;
 var led;
 
 
+mythingstate = {
+  "state": {
+    "reported": {
+      "ip": "unknown",
+      "distancia":0,
+      "alerta":""
+    }
+  }
+}
+
 board.on("ready", function() {
   var proximity = new five.Proximity({
     controller: "HCSR04",
@@ -43,20 +53,21 @@ function ultraChange(){
 
 	if(Math.abs(cm - ultraBaseline) > ultraThreshold){
 
-
+	    
            console.log("Alerta, la distancia cambió");
            // Turn it on and set the initial color
            led.on();
-           led.color("#00FF00");
-           awsConnetion.enviar("OH, ha cambiado :O");
+           led.color("#FF0000");
 
+	   mythingstate["state"]["reported"]["distancia"] = cm;
+	   mythingstate["state"]["reported"]["alerta"] = "Fuera del rango permitido";
+           awsConnetion.enviar(mythingstate);
+  	
 
 	}else {
-	  led.color("#FF0000");
-    mensaje = "Todo Right"
-	  console.log("Todo normal")
+	  led.color("#00FF00");
+	  console.log("Estado normal")
 	}
 
 }
 
-module.export.mensaje = mensaje;
